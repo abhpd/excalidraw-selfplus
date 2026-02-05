@@ -7,7 +7,11 @@ const App = () => {
 
   return (
     <div style={{ height: "100vh", width: "100vw" }}>
-      <Excalidraw initialData={initialData} onChange={onChange} />
+      <Excalidraw
+        theme={"dark"}
+        initialData={initialData}
+        onChange={onChange}
+      />
     </div>
   );
 };
