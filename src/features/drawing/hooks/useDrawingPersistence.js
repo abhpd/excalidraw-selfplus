@@ -15,7 +15,10 @@ export const useDrawingPersistence = ({
   saveDebounceMs = DEFAULT_SAVE_DEBOUNCE_MS,
 } = {}) => {
   // Load once per storage key change so Excalidraw does not re-initialize on every render.
-  const initialData = useMemo(() => loadSceneFromStorage(storageKey), [storageKey]);
+  const initialData = useMemo(
+    () => loadSceneFromStorage(storageKey),
+    [storageKey],
+  );
 
   // Keep one debounced function instance until key/debounce settings change.
   // This allows lodash to coalesce rapid onChange calls correctly.
