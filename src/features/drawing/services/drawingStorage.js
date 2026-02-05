@@ -1,14 +1,11 @@
 import { restore, serializeAsJSON } from "@excalidraw/excalidraw";
-
-export const EXCALIDRAW_STORAGE_KEY = "excalidraw:selfplus:drawing";
+import { DRAWING_STORAGE_KEY } from "../constants/persistence";
 
 /**
  * Reads and restores an Excalidraw scene from localStorage.
  * Returns `undefined` when no valid scene is available.
  */
-export const loadSceneFromStorage = (
-  storageKey = EXCALIDRAW_STORAGE_KEY,
-) => {
+export const loadSceneFromStorage = (storageKey = DRAWING_STORAGE_KEY) => {
   try {
     const rawScene = localStorage.getItem(storageKey);
     if (!rawScene) {
@@ -34,7 +31,7 @@ export const loadSceneFromStorage = (
  */
 export const saveSceneToStorage = (
   { elements, appState, files },
-  storageKey = EXCALIDRAW_STORAGE_KEY,
+  storageKey = DRAWING_STORAGE_KEY,
 ) => {
   try {
     const serializedScene = serializeAsJSON(elements, appState, files, "local");

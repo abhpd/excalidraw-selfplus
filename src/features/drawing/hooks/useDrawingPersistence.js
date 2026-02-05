@@ -1,23 +1,21 @@
 import _ from "lodash";
 import { useEffect, useMemo } from "react";
 import {
-  EXCALIDRAW_STORAGE_KEY,
+  DEFAULT_SAVE_DEBOUNCE_MS,
+  DRAWING_STORAGE_KEY,
+} from "../constants/persistence";
+import {
   loadSceneFromStorage,
   saveSceneToStorage,
-} from "../utils/excalidrawStorage";
-
-const DEFAULT_SAVE_DEBOUNCE_MS = 300;
+} from "../services/drawingStorage";
 
 /** Simple local persistence with debounced saves. */
-export const useExcalidrawPersistence = ({
-  storageKey = EXCALIDRAW_STORAGE_KEY,
+export const useDrawingPersistence = ({
+  storageKey = DRAWING_STORAGE_KEY,
   saveDebounceMs = DEFAULT_SAVE_DEBOUNCE_MS,
 } = {}) => {
   // Load once per storage key change so Excalidraw does not re-initialize on every render.
-  const initialData = useMemo(
-    () => loadSceneFromStorage(storageKey),
-    [storageKey],
-  );
+  const initialData = useMemo(() => loadSceneFromStorage(storageKey), [storageKey]);
 
   // Keep one debounced function instance until key/debounce settings change.
   // This allows lodash to coalesce rapid onChange calls correctly.
