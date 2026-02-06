@@ -28,6 +28,8 @@ const getFallbackItem = (itemId) => ({
 export const useBoardsTree = ({
   rootId,
   itemsById,
+  expandedFolderIds,
+  setExpandedFolderIds,
   setActiveBoardId,
   renameItem,
   updateFolderChildren,
@@ -87,7 +89,12 @@ export const useBoardsTree = ({
     },
     onDrop,
 
-    initialState: { expandedItems: [rootId] },
+    /**
+     * Keep expanded folders persistent across refreshes.
+     * `setExpandedItems` is called by the tree feature whenever expansion changes.
+     */
+    initialState: { expandedItems: expandedFolderIds },
+    setExpandedItems: setExpandedFolderIds,
     dataLoader: {
       getItem: (itemId) => itemsById[itemId] ?? getFallbackItem(itemId),
       getChildren: (itemId) => itemsById[itemId]?.childrenIds ?? [],

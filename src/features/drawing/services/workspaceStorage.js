@@ -12,6 +12,7 @@ import {
   isBoardItem,
   isFolderItem,
   isNonEmptyString,
+  normalizeExpandedFolderIds,
 } from "./workspace/workspaceModel";
 
 /**
@@ -117,10 +118,17 @@ const sanitizeWorkspace = (rawWorkspace) => {
     ? rawWorkspace.activeBoardId
     : boardIds[0];
 
+  const expandedFolderIds = normalizeExpandedFolderIds(
+    sanitizedItemsById,
+    ROOT_FOLDER_ID,
+    rawWorkspace?.expandedFolderIds,
+  );
+
   return {
     rootId: ROOT_FOLDER_ID,
     itemsById: sanitizedItemsById,
     activeBoardId: boardIds.includes(activeBoardId) ? activeBoardId : boardIds[0],
+    expandedFolderIds,
   };
 };
 
@@ -155,6 +163,7 @@ export const createDefaultWorkspace = () => {
   return {
     rootId: ROOT_FOLDER_ID,
     activeBoardId: defaultBoardId,
+    expandedFolderIds: [ROOT_FOLDER_ID],
     itemsById: {
       [ROOT_FOLDER_ID]: {
         ...createFolderItem(ROOT_FOLDER_ID, "Boards"),

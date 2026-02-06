@@ -110,6 +110,45 @@ export const normalizeChildrenIds = (childrenIds, itemsById, rootId) => {
 };
 
 /**
+ * Normalizes the persisted "expanded folders" list used by the tree UI.
+ *
+ * Guarantees:
+ * - only existing folder ids are kept
+ * - duplicates are removed while preserving order
+ * - root folder id is always present so the tree remains navigable
+ */
+export const normalizeExpandedFolderIds = (
+  itemsById,
+  rootId,
+  expandedFolderIds,
+) => {
+  const normalized = [];
+  const seen = new Set();
+
+  // Keep root open as an always-visible anchor in the list.
+  if (isFolderItem(itemsById[rootId])) {
+    normalized.push(rootId);
+    seen.add(rootId);
+  }
+
+  const source = Array.isArray(expandedFolderIds) ? expandedFolderIds : [];
+  for (const folderId of source) {
+    if (
+      !isNonEmptyString(folderId) ||
+      seen.has(folderId) ||
+      !isFolderItem(itemsById[folderId])
+    ) {
+      continue;
+    }
+
+    seen.add(folderId);
+    normalized.push(folderId);
+  }
+
+  return normalized;
+};
+
+/**
  * Returns the subtree node ids below `rootItemId` using breadth-first traversal.
  * This is used for recursive folder deletion.
  */

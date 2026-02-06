@@ -14,6 +14,35 @@ import {
   renameWorkspaceItem,
   replaceFolderChildren,
 } from "../services/workspace/workspaceMutations";
+import { normalizeExpandedFolderIds } from "../services/workspace/workspaceModel";
+
+const areStringArraysEqual = (left, right) =>
+  left.length === right.length &&
+  left.every((value, index) => value === right[index]);
+
+/**
+ * Keeps `expandedFolderIds` valid whenever workspace nodes change.
+ */
+const normalizeWorkspaceExpansion = (workspace) => {
+  const currentExpandedFolderIds = Array.isArray(workspace.expandedFolderIds)
+    ? workspace.expandedFolderIds
+    : [];
+
+  const normalizedExpandedFolderIds = normalizeExpandedFolderIds(
+    workspace.itemsById,
+    workspace.rootId,
+    currentExpandedFolderIds,
+  );
+
+  if (areStringArraysEqual(normalizedExpandedFolderIds, currentExpandedFolderIds)) {
+    return workspace;
+  }
+
+  return {
+    ...workspace,
+    expandedFolderIds: normalizedExpandedFolderIds,
+  };
+};
 
 /**
  * Central orchestrator for board/folder metadata.
@@ -42,17 +71,19 @@ export const useWorkspacePersistence = () => {
         return previousWorkspace;
       }
 
-      return {
+      return normalizeWorkspaceExpansion({
         ...previousWorkspace,
         activeBoardId: boardId,
-      };
+      });
     });
   }, []);
 
   /** Renames a board or folder (whitespace-only names are ignored). */
   const renameItem = useCallback((itemId, nextNameRaw) => {
     setWorkspace((previousWorkspace) =>
-      renameWorkspaceItem(previousWorkspace, itemId, nextNameRaw),
+      normalizeWorkspaceExpansion(
+        renameWorkspaceItem(previousWorkspace, itemId, nextNameRaw),
+      ),
     );
   }, []);
 
@@ -61,7 +92,9 @@ export const useWorkspacePersistence = () => {
     const boardId = createNodeId("board");
 
     setWorkspace((previousWorkspace) =>
-      addBoardToWorkspace(previousWorkspace, parentFolderId, boardId).nextWorkspace,
+      normalizeWorkspaceExpansion(
+        addBoardToWorkspace(previousWorkspace, parentFolderId, boardId).nextWorkspace,
+      ),
     );
 
     return boardId;
@@ -72,7 +105,9 @@ export const useWorkspacePersistence = () => {
     const folderId = createNodeId("folder");
 
     setWorkspace((previousWorkspace) =>
-      addFolderToWorkspace(previousWorkspace, parentFolderId, folderId).nextWorkspace,
+      normalizeWorkspaceExpansion(
+        addFolderToWorkspace(previousWorkspace, parentFolderId, folderId).nextWorkspace,
+      ),
     );
 
     return folderId;
@@ -94,14 +129,29 @@ export const useWorkspacePersistence = () => {
         removeSceneFromStorage(createBoardStorageKey(boardId));
       }
 
-      return nextWorkspace;
+      return normalizeWorkspaceExpansion(nextWorkspace);
     });
   }, []);
 
   /** Applies drag-and-drop child order updates for one folder. */
   const updateFolderChildren = useCallback((folderId, nextChildrenIds) => {
     setWorkspace((previousWorkspace) =>
-      replaceFolderChildren(previousWorkspace, folderId, nextChildrenIds),
+      normalizeWorkspaceExpansion(
+        replaceFolderChildren(previousWorkspace, folderId, nextChildrenIds),
+      ),
+    );
+  }, []);
+
+  /**
+   * Receives the tree library's expanded folder list and persists it.
+   * We sanitize before writing so stale/duplicate ids are never stored.
+   */
+  const setExpandedFolderIds = useCallback((nextExpandedFolderIds) => {
+    setWorkspace((previousWorkspace) =>
+      normalizeWorkspaceExpansion({
+        ...previousWorkspace,
+        expandedFolderIds: nextExpandedFolderIds,
+      }),
     );
   }, []);
 
@@ -117,11 +167,13 @@ export const useWorkspacePersistence = () => {
     activeBoardId: workspace.activeBoardId,
     rootId: workspace.rootId,
     itemsById: workspace.itemsById,
+    expandedFolderIds: workspace.expandedFolderIds,
     setActiveBoardId,
     renameItem,
     createBoard,
     createFolder,
     deleteItem,
     updateFolderChildren,
+    setExpandedFolderIds,
   };
 };

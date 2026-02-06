@@ -20,6 +20,8 @@ export const DrawingCanvas = () => {
     activeBoardId,
     rootId,
     itemsById,
+    expandedFolderIds,
+    setExpandedFolderIds,
     setActiveBoardId,
     renameItem,
     createBoard,
@@ -32,6 +34,8 @@ export const DrawingCanvas = () => {
   const tree = useBoardsTree({
     rootId,
     itemsById,
+    expandedFolderIds,
+    setExpandedFolderIds,
     setActiveBoardId,
     renameItem,
     updateFolderChildren,
