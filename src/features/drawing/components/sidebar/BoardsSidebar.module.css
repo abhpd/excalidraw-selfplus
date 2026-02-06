@@ -1,0 +1,179 @@
+/* Sidebar frame and scroll container */
+.sidebar {
+  width: 260px;
+  min-width: 220px;
+  display: flex;
+  flex-direction: column;
+  border-right: 1px solid #e4e7eb;
+  background: #ffffff;
+}
+
+.sidebarHeader {
+  padding: 12px 12px 10px;
+  font-size: 12px;
+  line-height: 1;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #6b7280;
+}
+
+.tree {
+  flex: 1;
+  overflow: auto;
+  padding: 6px;
+}
+
+/* Generic row states */
+.treeItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-height: 30px;
+  border-radius: 7px;
+  padding-right: 6px;
+  color: #1f2937;
+  cursor: pointer;
+  user-select: none;
+  outline: none;
+  transition: background-color 0.12s ease;
+}
+
+.treeItem:hover {
+  background: #f2f4f7;
+}
+
+.treeItem:focus-visible {
+  box-shadow: inset 0 0 0 2px #c7d2fe;
+}
+
+.treeItemActive {
+  background: #e9eef8;
+}
+
+.treeItemRenaming {
+  background: #eef2ff;
+}
+
+.treeItemDragged {
+  opacity: 0.62;
+}
+
+.treeItemDragOver {
+  background: #edf4ff;
+}
+
+.treeItemDropTarget {
+  background: #e7eefb;
+}
+
+.treeItemDropAbove {
+  box-shadow: inset 0 2px 0 #6b84c6;
+}
+
+.treeItemDropBelow {
+  box-shadow: inset 0 -2px 0 #6b84c6;
+}
+
+/* Row content layout */
+.treeItemMain {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: 1;
+}
+
+.treeItemChevron {
+  width: 11px;
+  text-align: center;
+  font-size: 9px;
+  color: #6b7280;
+}
+
+.treeItemTypeIcon {
+  color: #5f6f86;
+  font-size: 13px;
+}
+
+.treeItemName {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 13px;
+  line-height: 1.2;
+}
+
+.renameInput {
+  width: 100%;
+  font-size: 13px;
+  line-height: 1.2;
+  border: 1px solid #ccd5e2;
+  border-radius: 5px;
+  padding: 3px 6px;
+  outline: none;
+  background: #ffffff;
+}
+
+.renameInput:focus {
+  border-color: #7b8fb3;
+}
+
+/* Row actions (rename/delete) */
+.treeItemActions {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  opacity: 0;
+}
+
+.treeItem:hover .treeItemActions,
+.treeItem:focus-within .treeItemActions {
+  opacity: 1;
+}
+
+.treeItemActionButton {
+  width: 22px;
+  height: 22px;
+  border-radius: 5px;
+  color: #677281;
+}
+
+.treeItemActionButton:hover {
+  background: #e6ebf2;
+  color: #111827;
+}
+
+/* Inline creation actions rendered under the last row */
+.inlineAddActions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 2px 4px 6px;
+  margin-top: 2px;
+}
+
+.inlineAddButton {
+  width: 24px;
+  height: 24px;
+  color: #50637c;
+  border-radius: 6px;
+}
+
+.inlineAddButton:hover {
+  background: #e8edf5;
+  color: #1f2937;
+}
+
+@media (max-width: 900px) {
+  /* Keep list usable on touch devices where hover is unavailable. */
+  .sidebar {
+    width: 220px;
+    min-width: 190px;
+  }
+
+  .treeItemActions {
+    opacity: 1;
+  }
+}

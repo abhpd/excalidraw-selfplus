@@ -7,11 +7,13 @@ import { DRAWING_STORAGE_KEY } from "../constants/persistence";
  */
 export const loadSceneFromStorage = (storageKey = DRAWING_STORAGE_KEY) => {
   try {
+    // Raw payload was written by `saveSceneToStorage`.
     const rawScene = localStorage.getItem(storageKey);
     if (!rawScene) {
       return undefined;
     }
 
+    // Parse, then normalize via Excalidraw's `restore` helper.
     const parsedScene = JSON.parse(rawScene);
     const restoredScene = restore(parsedScene, null, null);
 
@@ -36,6 +38,7 @@ export const saveSceneToStorage = (
   storageKey = DRAWING_STORAGE_KEY,
 ) => {
   try {
+    // Serialize through Excalidraw so schema details stay aligned with upstream.
     const serializedScene = serializeAsJSON(elements, appState, files, "local");
     const parsedScene = JSON.parse(serializedScene);
 
@@ -48,6 +51,15 @@ export const saveSceneToStorage = (
     };
 
     localStorage.setItem(storageKey, JSON.stringify(parsedScene));
+  } catch {
+    // Ignore storage errors (private mode, quota exceeded, etc).
+  }
+};
+
+export const removeSceneFromStorage = (storageKey = DRAWING_STORAGE_KEY) => {
+  try {
+    // Used when deleting boards so orphaned scene blobs do not accumulate.
+    localStorage.removeItem(storageKey);
   } catch {
     // Ignore storage errors (private mode, quota exceeded, etc).
   }

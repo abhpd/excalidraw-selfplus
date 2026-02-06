@@ -1,4 +1,24 @@
-.shell {
+/* Outer app split: sidebar + drawing surface */
+.layout {
   width: 100%;
   height: 100%;
+  display: flex;
+  background: #f5f6f8;
+  color: #171717;
+}
+
+/* Excalidraw container occupies remaining horizontal space */
+.canvasPane {
+  flex: 1;
+  min-width: 0;
+}
+
+/* Empty-state fallback if no board can be resolved */
+.emptyCanvas {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #6b7280;
 }
