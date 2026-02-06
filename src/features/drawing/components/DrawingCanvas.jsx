@@ -1,5 +1,8 @@
 import { Excalidraw } from "@excalidraw/excalidraw";
 import "@excalidraw/excalidraw/index.css";
+import { MenuFoldOutlined, MenuUnfoldOutlined } from "@ant-design/icons";
+import { Button } from "antd";
+import { useState } from "react";
 import { useWorkspacePersistence } from "../hooks/useWorkspacePersistence";
 import { useBoardSceneController } from "../hooks/excalidraw/useBoardSceneController";
 import { useBoardsTree } from "../hooks/tree/useBoardsTree";
@@ -46,18 +49,14 @@ const DrawingCanvasContent = ({
       activeBoardId,
       hasActiveBoard: Boolean(activeBoard),
     });
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+
+  const toggleSidebar = () => {
+    setIsSidebarCollapsed((previousState) => !previousState);
+  };
 
   return (
     <div className={styles.layout}>
-      <BoardsSidebar
-        tree={tree}
-        rootId={rootId}
-        activeBoardId={activeBoardId}
-        onDeleteItem={deleteItem}
-        onCreateBoard={createBoard}
-        onCreateFolder={createFolder}
-      />
-
       <div className={styles.canvasPane}>
         {activeBoard ? (
           <Excalidraw
@@ -70,6 +69,42 @@ const DrawingCanvasContent = ({
           <div className={styles.emptyCanvas}>No board selected</div>
         )}
       </div>
+
+      <div
+        className={[
+          styles.sidebarShell,
+          isSidebarCollapsed ? styles.sidebarShellCollapsed : "",
+        ]
+          .filter(Boolean)
+          .join(" ")}
+      >
+        <BoardsSidebar
+          tree={tree}
+          rootId={rootId}
+          activeBoardId={activeBoardId}
+          onDeleteItem={deleteItem}
+          onCreateBoard={createBoard}
+          onCreateFolder={createFolder}
+        />
+      </div>
+
+      <Button
+        type="default"
+        shape="circle"
+        size="small"
+        className={[
+          styles.sidebarToggleButton,
+          !isSidebarCollapsed ? styles.sidebarToggleButtonExpanded : "",
+        ]
+          .filter(Boolean)
+          .join(" ")}
+        onClick={toggleSidebar}
+        icon={
+          isSidebarCollapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />
+        }
+        aria-label={isSidebarCollapsed ? "Expand boards sidebar" : "Collapse boards sidebar"}
+        title={isSidebarCollapsed ? "Show boards sidebar" : "Hide boards sidebar"}
+      />
     </div>
   );
 };

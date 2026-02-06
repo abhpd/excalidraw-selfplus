@@ -1,16 +1,57 @@
 /* Outer app split: sidebar + drawing surface */
 .layout {
+  --sidebar-width: 260px;
   width: 100%;
   height: 100%;
   display: flex;
+  position: relative;
+  overflow: hidden;
   background: #f5f6f8;
   color: #171717;
+}
+
+/* Slide-over sidebar shell so Excalidraw keeps a stable full-width surface. */
+.sidebarShell {
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: var(--sidebar-width);
+  z-index: 30;
+  transform: translateX(0);
+  opacity: 1;
+  transition:
+    transform 190ms ease,
+    opacity 140ms ease;
+}
+
+.sidebarShellCollapsed {
+  transform: translateX(calc(-100% - 8px));
+  opacity: 0;
+  pointer-events: none;
 }
 
 /* Excalidraw container occupies remaining horizontal space */
 .canvasPane {
   flex: 1;
+  width: 100%;
   min-width: 0;
+  position: relative;
+}
+
+/* Floating sidebar toggle; avoids introducing a dedicated top toolbar. */
+.sidebarToggleButton {
+  position: absolute;
+  top: 50px;
+  left: 10px;
+  z-index: 40;
+  transform: translateX(0);
+  transition: transform 190ms ease;
+  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.16);
+}
+
+.sidebarToggleButtonExpanded {
+  transform: translateX(var(--sidebar-width));
 }
 
 /* Empty-state fallback if no board can be resolved */
@@ -21,4 +62,10 @@
   align-items: center;
   justify-content: center;
   color: #6b7280;
+}
+
+@media (max-width: 900px) {
+  .layout {
+    --sidebar-width: 220px;
+  }
 }
