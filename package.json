@@ -10,7 +10,12 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@ant-design/icons": "^6.1.0",
     "@excalidraw/excalidraw": "^0.18.0",
+    "@headless-tree/core": "^1.6.3",
+    "@headless-tree/react": "^1.6.3",
+    "antd": "^6.2.3",
+    "dexie": "^4.3.0",
     "lodash": "^4.17.23",
     "react": "^19.2.0",
     "react-dom": "^19.2.0"

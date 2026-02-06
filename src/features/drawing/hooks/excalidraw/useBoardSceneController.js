@@ -1,0 +1,126 @@
+import { CaptureUpdateAction } from "@excalidraw/excalidraw";
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
+import { createBoardStorageKey } from "../../constants/persistence";
+import { useDrawingPersistence } from "../useDrawingPersistence";
+import { loadSceneFromStorage } from "../../services/drawingStorage";
+
+/**
+ * Product decision: keep the drawing experience in dark mode for every board.
+ * Board scenes can still contain a persisted `appState.theme`, but we override
+ * it on load to avoid unexpected theme flips while switching boards.
+ */
+export const EXCALIDRAW_FORCED_THEME = "dark";
+
+/**
+ * Pushes a persisted board scene into the currently mounted Excalidraw instance.
+ *
+ * Notes:
+ * - files must be added before `updateScene` so image/file references resolve.
+ * - `captureUpdate: NEVER` keeps board-switch operations out of undo history.
+ */
+const applySceneToMountedCanvas = (excalidrawApi, scene) => {
+  const sceneFiles = Object.values(scene?.files ?? {});
+  if (sceneFiles.length > 0) {
+    excalidrawApi.addFiles(sceneFiles);
+  }
+
+  excalidrawApi.updateScene({
+    elements: scene?.elements ?? [],
+    appState: {
+      ...(scene?.appState ?? {}),
+      theme: EXCALIDRAW_FORCED_THEME,
+    },
+    captureUpdate: CaptureUpdateAction.NEVER,
+  });
+};
+
+/**
+ * Owns Excalidraw board scene lifecycle.
+ *
+ * Responsibilities:
+ * - provide board-scoped persistence (`initialData`, `onChange`)
+ * - keep one Excalidraw instance mounted across board switches
+ * - swap scene data imperatively to prevent full-page flash/re-mount
+ */
+export const useBoardSceneController = ({ activeBoardId, hasActiveBoard }) => {
+  const excalidrawApiRef = useRef(null);
+  const isSceneReadyRef = useRef(false);
+  const [apiReadyVersion, setApiReadyVersion] = useState(0);
+  const storageKey = createBoardStorageKey(activeBoardId);
+
+  /**
+   * Lock persistence before paint whenever board key changes.
+   * This minimizes any chance of writing transient pre-switch scene data.
+   */
+  useLayoutEffect(() => {
+    isSceneReadyRef.current = false;
+  }, [storageKey]);
+
+  const { initialData, onChange: persistSceneChange } = useDrawingPersistence({
+    storageKey,
+  });
+
+  /**
+   * Registers the imperative Excalidraw API when component mounts.
+   * This callback is stable so React does not rewire it unnecessarily.
+   */
+  const registerExcalidrawApi = useCallback((api) => {
+    excalidrawApiRef.current = api;
+    // Trigger a re-run of board-load effect once API becomes available.
+    setApiReadyVersion((previousVersion) => previousVersion + 1);
+  }, []);
+
+  /**
+   * On board change, load scene from storage and apply into mounted canvas.
+   */
+  useEffect(() => {
+    let isCancelled = false;
+    isSceneReadyRef.current = false;
+
+    const excalidrawApi = excalidrawApiRef.current;
+    if (!excalidrawApi || !hasActiveBoard) {
+      return;
+    }
+
+    const loadAndApplyScene = async () => {
+      const nextScene = await loadSceneFromStorage(storageKey);
+      if (isCancelled) {
+        return;
+      }
+
+      applySceneToMountedCanvas(excalidrawApi, nextScene);
+
+      // Unlock persistence only after current board scene is applied.
+      isSceneReadyRef.current = true;
+    };
+
+    // Fire-and-forget async scene swap; cancellation guard avoids applying to stale effect runs.
+    void loadAndApplyScene();
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [apiReadyVersion, hasActiveBoard, storageKey]);
+
+  /**
+   * Blocks persistence during board switches.
+   * This prevents transient "old scene written to new board key" corruption.
+   */
+  const onChange = useCallback(
+    (elements, appState, files) => {
+      if (!isSceneReadyRef.current) {
+        return;
+      }
+
+      persistSceneChange(elements, appState, files);
+    },
+    [persistSceneChange],
+  );
+
+  return {
+    theme: EXCALIDRAW_FORCED_THEME,
+    initialData,
+    onChange,
+    registerExcalidrawApi,
+  };
+};
