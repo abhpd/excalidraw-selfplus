@@ -1,8 +1,7 @@
 import { Excalidraw } from "@excalidraw/excalidraw";
 import "@excalidraw/excalidraw/index.css";
-import { createBoardStorageKey } from "../constants/persistence";
-import { useDrawingPersistence } from "../hooks/useDrawingPersistence";
 import { useWorkspacePersistence } from "../hooks/useWorkspacePersistence";
+import { useBoardSceneController } from "../hooks/excalidraw/useBoardSceneController";
 import { useBoardsTree } from "../hooks/tree/useBoardsTree";
 import { BoardsSidebar } from "./sidebar/BoardsSidebar";
 import styles from "./DrawingCanvas.module.css";
@@ -39,11 +38,16 @@ export const DrawingCanvas = () => {
   });
 
   /**
-   * Scene persistence is keyed per board, so every board stores its own canvas.
+   * Dedicated Excalidraw lifecycle hook:
+   * - board-scoped persistence
+   * - no-remount scene switching
+   * - theme stabilization
    */
-  const { initialData, onChange } = useDrawingPersistence({
-    storageKey: createBoardStorageKey(activeBoardId),
-  });
+  const { theme, initialData, onChange, registerExcalidrawApi } =
+    useBoardSceneController({
+      activeBoardId,
+      hasActiveBoard: Boolean(activeBoard),
+    });
 
   return (
     <div className={styles.layout}>
@@ -59,10 +63,10 @@ export const DrawingCanvas = () => {
       <div className={styles.canvasPane}>
         {activeBoard ? (
           <Excalidraw
-            key={activeBoardId}
-            theme="dark"
+            theme={theme}
             initialData={initialData}
             onChange={onChange}
+            excalidrawAPI={registerExcalidrawApi}
           />
         ) : (
           <div className={styles.emptyCanvas}>No board selected</div>
