@@ -1,7 +1,7 @@
 import { Excalidraw } from "@excalidraw/excalidraw";
 import "@excalidraw/excalidraw/index.css";
 import { MenuFoldOutlined, MenuUnfoldOutlined } from "@ant-design/icons";
-import { Button } from "antd";
+import { Button, Tooltip } from "antd";
 import { useState } from "react";
 import { useWorkspacePersistence } from "../hooks/useWorkspacePersistence";
 import { useBoardSceneController } from "../hooks/excalidraw/useBoardSceneController";
@@ -88,23 +88,28 @@ const DrawingCanvasContent = ({
         />
       </div>
 
-      <Button
-        type="default"
-        shape="circle"
-        size="small"
-        className={[
-          styles.sidebarToggleButton,
-          !isSidebarCollapsed ? styles.sidebarToggleButtonExpanded : "",
-        ]
-          .filter(Boolean)
-          .join(" ")}
-        onClick={toggleSidebar}
-        icon={
-          isSidebarCollapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />
-        }
-        aria-label={isSidebarCollapsed ? "Expand boards sidebar" : "Collapse boards sidebar"}
-        title={isSidebarCollapsed ? "Show boards sidebar" : "Hide boards sidebar"}
-      />
+      <Tooltip
+        title={isSidebarCollapsed ? "Expand files" : "Collapse files"}
+        placement="right"
+        mouseEnterDelay={0.5}
+        mouseLeaveDelay={0}
+      >
+        <Button
+          type="default"
+          size="large"
+          className={[
+            styles.sidebarToggleButton,
+            !isSidebarCollapsed ? styles.sidebarToggleButtonExpanded : "",
+          ]
+            .filter(Boolean)
+            .join(" ")}
+          onClick={toggleSidebar}
+          icon={
+            isSidebarCollapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />
+          }
+          aria-label={isSidebarCollapsed ? "Expand files" : "Collapse files"}
+        />
+      </Tooltip>
     </div>
   );
 };

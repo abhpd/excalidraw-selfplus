@@ -1,32 +1,46 @@
 import { FileAddOutlined, FolderAddOutlined } from "@ant-design/icons";
-import { Button } from "antd";
+import { Button, Tooltip } from "antd";
 import styles from "./BoardsSidebar.module.css";
 
 /**
- * Small inline controls rendered directly under the visible tree items.
+ * Reusable create controls used in the sidebar header.
  */
-export const AddTreeActions = ({ onCreateBoard, onCreateFolder }) => {
-  return (
-    <div className={styles.inlineAddActions}>
-      <Button
-        type="text"
-        size="small"
-        className={styles.inlineAddButton}
-        onClick={onCreateBoard}
-        aria-label="Add board"
-        title="Add board"
-        icon={<FileAddOutlined />}
-      />
+export const AddTreeActions = ({
+  onCreateBoard,
+  onCreateFolder,
+  className = "",
+  buttonClassName = "",
+}) => {
+  const containerClassName = [styles.inlineAddActions, className]
+    .filter(Boolean)
+    .join(" ");
+  const actionButtonClassName = [styles.inlineAddButton, buttonClassName]
+    .filter(Boolean)
+    .join(" ");
 
-      <Button
-        type="text"
-        size="small"
-        className={styles.inlineAddButton}
-        onClick={onCreateFolder}
-        aria-label="Add folder"
-        title="Add folder"
-        icon={<FolderAddOutlined />}
-      />
+  return (
+    <div className={containerClassName}>
+      <Tooltip title="New board" placement="top">
+        <Button
+          type="text"
+          size="small"
+          className={actionButtonClassName}
+          onClick={onCreateBoard}
+          aria-label="Add board"
+          icon={<FileAddOutlined />}
+        />
+      </Tooltip>
+
+      <Tooltip title="New folder" placement="top">
+        <Button
+          type="text"
+          size="small"
+          className={actionButtonClassName}
+          onClick={onCreateFolder}
+          aria-label="Add folder"
+          icon={<FolderAddOutlined />}
+        />
+      </Tooltip>
     </div>
   );
 };

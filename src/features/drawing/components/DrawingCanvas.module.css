@@ -41,17 +41,58 @@
 
 /* Floating sidebar toggle; avoids introducing a dedicated top toolbar. */
 .sidebarToggleButton {
+  --exd-primary-darker: #b2aeff;
+  --exd-primary-surface: #403e6a;
+  --exd-primary-surface-darker: #43415e;
+  --exd-surface-low: hsl(240, 8%, 15%);
+  --exd-on-surface: #e3e3e8;
+  --exd-border-variant: #46464f;
+  --exd-border-outline: #8e8d9c;
+
   position: absolute;
-  top: 50px;
-  left: 10px;
+  top: 14px;
+  left: 60px;
   z-index: 40;
+  padding: 0;
+  border-radius: 8px;
+  border: 1px solid var(--exd-border-variant);
+  background: var(--exd-surface-low);
+  color: var(--exd-primary-darker);
+  display: flex;
+  align-items: center;
+  justify-content: center;
   transform: translateX(0);
-  transition: transform 190ms ease;
+  transition:
+    transform 190ms ease,
+    background-color 120ms ease,
+    border-color 120ms ease,
+    color 120ms ease;
   box-shadow: 0 1px 6px rgba(0, 0, 0, 0.16);
 }
 
 .sidebarToggleButtonExpanded {
-  transform: translateX(var(--sidebar-width));
+  transform: translateX(212px);
+}
+
+.sidebarToggleButton:hover {
+  background: var(--exd-primary-surface) !important;
+  color: var(--exd-on-surface) !important;
+  border-color: var(--exd-border-outline) !important;
+}
+
+.sidebarToggleButton:focus-visible {
+  background: var(--exd-primary-surface) !important;
+  color: var(--exd-on-surface) !important;
+  border-color: var(--exd-border-outline) !important;
+}
+
+.sidebarToggleButton:active {
+  background: var(--exd-primary-surface-darker) !important;
+  color: var(--exd-on-surface) !important;
+}
+
+.sidebarToggleButton :global(.anticon) {
+  font-size: 14px;
 }
 
 /* Empty-state fallback if no board can be resolved */

@@ -1,27 +1,100 @@
 /* Sidebar frame and scroll container */
 .sidebar {
+  --exd-primary: #a8a5ff;
+  --exd-primary-darker: #b2aeff;
+  --exd-primary-hover: #bbb8ff;
+  --exd-primary-surface: #403e6a;
+  --exd-primary-surface-darker: #43415e;
+  --exd-surface-high: hsl(245, 10%, 21%);
+  --exd-surface-low: hsl(240, 8%, 15%);
+  --exd-surface-lowest: hsl(0, 0%, 7%);
+  --exd-on-surface: #e3e3e8;
+  --exd-muted: #b8b8b8;
+  --exd-border-variant: #46464f;
+  --exd-border-outline: #8e8d9c;
+  --sidebar-font-size: 15px;
+  --sidebar-header-size: 15px;
+
   width: 260px;
   min-width: 220px;
+  height: 100%;
   display: flex;
   flex-direction: column;
-  border-right: 1px solid #e4e7eb;
-  background: #ffffff;
+  font-family:
+    "Assistant",
+    "Inter",
+    "Segoe UI",
+    system-ui,
+    -apple-system,
+    sans-serif;
+  font-size: var(--sidebar-font-size);
+  color-scheme: dark;
+  border-right: 1px solid var(--exd-border-variant);
+  background: var(--exd-surface-lowest);
 }
 
 .sidebarHeader {
-  padding: 12px 12px 10px;
-  font-size: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px 8px;
+}
+
+.sidebarHeaderTitle {
+  font-size: var(--sidebar-header-size);
   line-height: 1;
-  font-weight: 600;
+  font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: #6b7280;
+  letter-spacing: 0.06em;
+  color: var(--exd-muted);
+}
+
+.headerAddActions {
+  padding: 0;
+  margin: 0;
+  gap: 2px;
+}
+
+.headerAddButton {
+  width: 28px;
+  height: 28px;
+  border-radius: 5px;
 }
 
 .tree {
   flex: 1;
   overflow: auto;
   padding: 6px;
+  scrollbar-gutter: stable;
+  scrollbar-width: thin;
+  scrollbar-color: var(--exd-border-variant) transparent;
+}
+
+/* Theme-matched scrollbar so vertical overflow blends with dark sidebar. */
+.tree::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+.tree::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.tree::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+  background: #5a5966;
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+
+.tree::-webkit-scrollbar-thumb:hover {
+  background: var(--exd-border-outline);
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+
+.tree::-webkit-scrollbar-corner {
+  background: transparent;
 }
 
 /* Generic row states */
@@ -30,10 +103,12 @@
   align-items: center;
   justify-content: space-between;
   gap: 8px;
-  min-height: 30px;
+  min-height: 36px;
+  min-width: 0;
+  box-sizing: border-box;
   border-radius: 7px;
   padding-right: 6px;
-  color: #1f2937;
+  color: var(--exd-on-surface);
   cursor: pointer;
   user-select: none;
   outline: none;
@@ -41,19 +116,19 @@
 }
 
 .treeItem:hover {
-  background: #f2f4f7;
+  background: var(--exd-surface-high);
 }
 
 .treeItem:focus-visible {
-  box-shadow: inset 0 0 0 2px #c7d2fe;
+  box-shadow: inset 0 0 0 2px var(--exd-primary-darker);
 }
 
 .treeItemActive {
-  background: #e9eef8;
+  background: var(--exd-primary-surface);
 }
 
 .treeItemRenaming {
-  background: #eef2ff;
+  background: var(--exd-primary-surface-darker);
 }
 
 .treeItemDragged {
@@ -61,19 +136,19 @@
 }
 
 .treeItemDragOver {
-  background: #edf4ff;
+  background: var(--exd-primary-surface-darker);
 }
 
 .treeItemDropTarget {
-  background: #e7eefb;
+  background: var(--exd-primary-surface);
 }
 
 .treeItemDropAbove {
-  box-shadow: inset 0 2px 0 #6b84c6;
+  box-shadow: inset 0 2px 0 var(--exd-primary);
 }
 
 .treeItemDropBelow {
-  box-shadow: inset 0 -2px 0 #6b84c6;
+  box-shadow: inset 0 -2px 0 var(--exd-primary);
 }
 
 /* Row content layout */
@@ -83,46 +158,55 @@
   align-items: center;
   gap: 6px;
   flex: 1;
+  overflow: hidden;
 }
 
 .treeItemChevron {
+  flex: 0 0 auto;
   width: 11px;
   text-align: center;
-  font-size: 9px;
-  color: #6b7280;
+  font-size: 10px;
+  color: var(--exd-border-outline);
 }
 
 .treeItemTypeIcon {
-  color: #5f6f86;
-  font-size: 13px;
+  flex: 0 0 auto;
+  color: var(--exd-primary-darker);
+  font-size: 15px;
 }
 
 .treeItemName {
+  min-width: 0;
+  flex: 1;
+  display: block;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  font-size: 13px;
-  line-height: 1.2;
+  font-size: 15px;
+  line-height: 1.35;
+  font-weight: 500;
 }
 
 .renameInput {
   width: 100%;
-  font-size: 13px;
-  line-height: 1.2;
-  border: 1px solid #ccd5e2;
+  font-size: 15px;
+  line-height: 1.35;
+  border: 1px solid var(--exd-border-variant);
   border-radius: 5px;
-  padding: 3px 6px;
+  padding: 4px 8px;
   outline: none;
-  background: #ffffff;
+  background: var(--exd-surface-low);
+  color: var(--exd-on-surface);
 }
 
 .renameInput:focus {
-  border-color: #7b8fb3;
+  border-color: var(--exd-primary-hover);
 }
 
 /* Row actions (rename/delete) */
 .treeItemActions {
   display: flex;
+  flex: 0 0 auto;
   align-items: center;
   gap: 2px;
   opacity: 0;
@@ -134,15 +218,30 @@
 }
 
 .treeItemActionButton {
-  width: 22px;
-  height: 22px;
+  width: 24px;
+  height: 24px;
   border-radius: 5px;
-  color: #677281;
+  color: var(--exd-primary-darker);
 }
 
 .treeItemActionButton:hover {
-  background: #e6ebf2;
-  color: #111827;
+  background: var(--exd-primary-surface) !important;
+  color: var(--exd-on-surface) !important;
+}
+
+.treeItemActionButton:focus-visible {
+  background: var(--exd-primary-surface) !important;
+  color: var(--exd-on-surface) !important;
+}
+
+.deleteActionButton:hover {
+  background: #5a242d !important;
+  color: #ffc5ce !important;
+}
+
+.deleteActionButton:focus-visible {
+  background: #5a242d !important;
+  color: #ffc5ce !important;
 }
 
 /* Inline creation actions rendered under the last row */
@@ -150,20 +249,29 @@
   display: flex;
   align-items: center;
   gap: 4px;
-  padding: 8px 2px 4px 6px;
   margin-top: 2px;
 }
 
 .inlineAddButton {
-  width: 24px;
-  height: 24px;
-  color: #50637c;
+  width: 26px;
+  height: 26px;
+  color: var(--exd-primary-darker);
   border-radius: 6px;
 }
 
 .inlineAddButton:hover {
-  background: #e8edf5;
-  color: #1f2937;
+  background: var(--exd-primary-surface) !important;
+  color: var(--exd-on-surface) !important;
+}
+
+.inlineAddButton:focus-visible {
+  background: var(--exd-primary-surface) !important;
+  color: var(--exd-on-surface) !important;
+}
+
+.inlineAddButton:active {
+  background: var(--exd-primary-surface-darker) !important;
+  color: var(--exd-on-surface) !important;
 }
 
 @media (max-width: 900px) {

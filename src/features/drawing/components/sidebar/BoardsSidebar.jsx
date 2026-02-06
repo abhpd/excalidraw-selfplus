@@ -24,7 +24,7 @@ const resolveCreateParentId = (tree, rootId) => {
 };
 
 /**
- * Sidebar that renders the Headless Tree rows and inline creation controls.
+ * Sidebar that renders the Headless Tree rows and header creation controls.
  */
 export const BoardsSidebar = ({
   tree,
@@ -57,9 +57,20 @@ export const BoardsSidebar = ({
 
   return (
     <aside className={styles.sidebar}>
-      <div className={styles.sidebarHeader}>Boards</div>
+      <div className={styles.sidebarHeader}>
+        <span className={styles.sidebarHeaderTitle}>draw.abhpd.in</span>
+        <AddTreeActions
+          onCreateBoard={handleCreateBoard}
+          onCreateFolder={handleCreateFolder}
+          className={styles.headerAddActions}
+          buttonClassName={styles.headerAddButton}
+        />
+      </div>
 
-      <div {...tree.getContainerProps("Board navigation")} className={styles.tree}>
+      <div
+        {...tree.getContainerProps("Board navigation")}
+        className={styles.tree}
+      >
         {items.map((item) => (
           <TreeItemRow
             key={item.getKey()}
@@ -70,11 +81,6 @@ export const BoardsSidebar = ({
             onDeleteItem={onDeleteItem}
           />
         ))}
-
-        <AddTreeActions
-          onCreateBoard={handleCreateBoard}
-          onCreateFolder={handleCreateFolder}
-        />
       </div>
     </aside>
   );

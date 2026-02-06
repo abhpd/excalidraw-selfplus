@@ -6,7 +6,7 @@ import {
   FileOutlined,
   FolderFilled,
 } from "@ant-design/icons";
-import { Button } from "antd";
+import { Button, Tooltip } from "antd";
 import styles from "./BoardsSidebar.module.css";
 
 /**
@@ -109,31 +109,33 @@ export const TreeItemRow = ({
           className={styles.treeItemActions}
           onClick={(event) => event.stopPropagation()}
         >
-          <Button
-            type="text"
-            size="small"
-            onClick={(event) => {
-              event.stopPropagation();
-              item.startRenaming();
-            }}
-            aria-label={`Rename ${item.getItemName()}`}
-            title="Rename"
-            className={styles.treeItemActionButton}
-            icon={<EditOutlined />}
-          />
+          <Tooltip title="Rename" placement="top">
+            <Button
+              type="text"
+              size="small"
+              onClick={(event) => {
+                event.stopPropagation();
+                item.startRenaming();
+              }}
+              aria-label={`Rename ${item.getItemName()}`}
+              className={styles.treeItemActionButton}
+              icon={<EditOutlined />}
+            />
+          </Tooltip>
 
-          <Button
-            type="text"
-            size="small"
-            className={styles.treeItemActionButton}
-            onClick={(event) => {
-              event.stopPropagation();
-              onDeleteItem(itemId);
-            }}
-            aria-label={`Delete ${item.getItemName()}`}
-            title="Delete"
-            icon={<DeleteOutlined />}
-          />
+          <Tooltip title="Delete" placement="top">
+            <Button
+              type="text"
+              size="small"
+              className={`${styles.treeItemActionButton} ${styles.deleteActionButton}`}
+              onClick={(event) => {
+                event.stopPropagation();
+                onDeleteItem(itemId);
+              }}
+              aria-label={`Delete ${item.getItemName()}`}
+              icon={<DeleteOutlined />}
+            />
+          </Tooltip>
         </div>
       )}
     </div>
