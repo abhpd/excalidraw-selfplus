@@ -7,29 +7,23 @@ import { BoardsSidebar } from "./sidebar/BoardsSidebar";
 import styles from "./DrawingCanvas.module.css";
 
 /**
- * Root drawing surface for the feature.
- *
- * High-level flow:
- * 1) Sidebar state is driven by workspace metadata (folders/boards)
- * 2) The selected board id picks a board-specific storage key
- * 3) Excalidraw reads/writes only that board scene
+ * Mounted only after workspace hydration.
+ * This guarantees tree/excalidraw hooks bootstrap from persisted state.
  */
-export const DrawingCanvas = () => {
-  const {
-    activeBoard,
-    activeBoardId,
-    rootId,
-    itemsById,
-    expandedFolderIds,
-    setExpandedFolderIds,
-    setActiveBoardId,
-    renameItem,
-    createBoard,
-    createFolder,
-    deleteItem,
-    updateFolderChildren,
-  } = useWorkspacePersistence();
-
+const DrawingCanvasContent = ({
+  activeBoard,
+  activeBoardId,
+  rootId,
+  itemsById,
+  expandedFolderIds,
+  setExpandedFolderIds,
+  setActiveBoardId,
+  renameItem,
+  createBoard,
+  createFolder,
+  deleteItem,
+  updateFolderChildren,
+}) => {
   /** Tree instance encapsulates sidebar keyboard + drag/drop + rename behavior. */
   const tree = useBoardsTree({
     rootId,
@@ -77,5 +71,58 @@ export const DrawingCanvas = () => {
         )}
       </div>
     </div>
+  );
+};
+
+/**
+ * Root drawing surface for the feature.
+ *
+ * High-level flow:
+ * 1) Sidebar state is driven by workspace metadata (folders/boards)
+ * 2) The selected board id picks a board-specific storage key
+ * 3) Excalidraw reads/writes only that board scene
+ */
+export const DrawingCanvas = () => {
+  const {
+    isWorkspaceReady,
+    activeBoard,
+    activeBoardId,
+    rootId,
+    itemsById,
+    expandedFolderIds,
+    setExpandedFolderIds,
+    setActiveBoardId,
+    renameItem,
+    createBoard,
+    createFolder,
+    deleteItem,
+    updateFolderChildren,
+  } = useWorkspacePersistence();
+
+  if (!isWorkspaceReady) {
+    return (
+      <div className={styles.layout}>
+        <div className={styles.canvasPane}>
+          <div className={styles.emptyCanvas}>Loading boards...</div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <DrawingCanvasContent
+      activeBoard={activeBoard}
+      activeBoardId={activeBoardId}
+      rootId={rootId}
+      itemsById={itemsById}
+      expandedFolderIds={expandedFolderIds}
+      setExpandedFolderIds={setExpandedFolderIds}
+      setActiveBoardId={setActiveBoardId}
+      renameItem={renameItem}
+      createBoard={createBoard}
+      createFolder={createFolder}
+      deleteItem={deleteItem}
+      updateFolderChildren={updateFolderChildren}
+    />
   );
 };

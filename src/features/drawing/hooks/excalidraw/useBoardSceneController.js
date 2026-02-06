@@ -1,5 +1,5 @@
 import { CaptureUpdateAction } from "@excalidraw/excalidraw";
-import { useCallback, useEffect, useRef } from "react";
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { createBoardStorageKey } from "../../constants/persistence";
 import { useDrawingPersistence } from "../useDrawingPersistence";
 import { loadSceneFromStorage } from "../../services/drawingStorage";
@@ -44,9 +44,19 @@ const applySceneToMountedCanvas = (excalidrawApi, scene) => {
  */
 export const useBoardSceneController = ({ activeBoardId, hasActiveBoard }) => {
   const excalidrawApiRef = useRef(null);
+  const isSceneReadyRef = useRef(false);
+  const [apiReadyVersion, setApiReadyVersion] = useState(0);
   const storageKey = createBoardStorageKey(activeBoardId);
 
-  const { initialData, onChange } = useDrawingPersistence({
+  /**
+   * Lock persistence before paint whenever board key changes.
+   * This minimizes any chance of writing transient pre-switch scene data.
+   */
+  useLayoutEffect(() => {
+    isSceneReadyRef.current = false;
+  }, [storageKey]);
+
+  const { initialData, onChange: persistSceneChange } = useDrawingPersistence({
     storageKey,
   });
 
@@ -56,20 +66,56 @@ export const useBoardSceneController = ({ activeBoardId, hasActiveBoard }) => {
    */
   const registerExcalidrawApi = useCallback((api) => {
     excalidrawApiRef.current = api;
+    // Trigger a re-run of board-load effect once API becomes available.
+    setApiReadyVersion((previousVersion) => previousVersion + 1);
   }, []);
 
   /**
    * On board change, load scene from storage and apply into mounted canvas.
    */
   useEffect(() => {
+    let isCancelled = false;
+    isSceneReadyRef.current = false;
+
     const excalidrawApi = excalidrawApiRef.current;
     if (!excalidrawApi || !hasActiveBoard) {
       return;
     }
 
-    const nextScene = loadSceneFromStorage(storageKey);
-    applySceneToMountedCanvas(excalidrawApi, nextScene);
-  }, [hasActiveBoard, storageKey]);
+    const loadAndApplyScene = async () => {
+      const nextScene = await loadSceneFromStorage(storageKey);
+      if (isCancelled) {
+        return;
+      }
+
+      applySceneToMountedCanvas(excalidrawApi, nextScene);
+
+      // Unlock persistence only after current board scene is applied.
+      isSceneReadyRef.current = true;
+    };
+
+    // Fire-and-forget async scene swap; cancellation guard avoids applying to stale effect runs.
+    void loadAndApplyScene();
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [apiReadyVersion, hasActiveBoard, storageKey]);
+
+  /**
+   * Blocks persistence during board switches.
+   * This prevents transient "old scene written to new board key" corruption.
+   */
+  const onChange = useCallback(
+    (elements, appState, files) => {
+      if (!isSceneReadyRef.current) {
+        return;
+      }
+
+      persistSceneChange(elements, appState, files);
+    },
+    [persistSceneChange],
+  );
 
   return {
     theme: EXCALIDRAW_FORCED_THEME,

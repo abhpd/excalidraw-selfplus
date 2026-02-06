@@ -1,14 +1,19 @@
 import { restore, serializeAsJSON } from "@excalidraw/excalidraw";
 import { DRAWING_STORAGE_KEY } from "../constants/persistence";
+import {
+  getPersistedValue,
+  removePersistedValue,
+  setPersistedValue,
+} from "./persistenceDb";
 
 /**
- * Reads and restores an Excalidraw scene from localStorage.
+ * Reads and restores an Excalidraw scene from IndexedDB (Dexie).
  * Returns `undefined` when no valid scene is available.
  */
-export const loadSceneFromStorage = (storageKey = DRAWING_STORAGE_KEY) => {
+export const loadSceneFromStorage = async (storageKey = DRAWING_STORAGE_KEY) => {
   try {
     // Raw payload was written by `saveSceneToStorage`.
-    const rawScene = localStorage.getItem(storageKey);
+    const rawScene = await getPersistedValue(storageKey);
     if (!rawScene) {
       return undefined;
     }
@@ -33,7 +38,7 @@ export const loadSceneFromStorage = (storageKey = DRAWING_STORAGE_KEY) => {
  * Serializes and stores the current Excalidraw scene.
  * Fails silently to keep the drawing experience uninterrupted.
  */
-export const saveSceneToStorage = (
+export const saveSceneToStorage = async (
   { elements, appState, files },
   storageKey = DRAWING_STORAGE_KEY,
 ) => {
@@ -50,16 +55,16 @@ export const saveSceneToStorage = (
       zoom: appState?.zoom,
     };
 
-    localStorage.setItem(storageKey, JSON.stringify(parsedScene));
+    await setPersistedValue(storageKey, JSON.stringify(parsedScene));
   } catch {
     // Ignore storage errors (private mode, quota exceeded, etc).
   }
 };
 
-export const removeSceneFromStorage = (storageKey = DRAWING_STORAGE_KEY) => {
+export const removeSceneFromStorage = async (storageKey = DRAWING_STORAGE_KEY) => {
   try {
     // Used when deleting boards so orphaned scene blobs do not accumulate.
-    localStorage.removeItem(storageKey);
+    await removePersistedValue(storageKey);
   } catch {
     // Ignore storage errors (private mode, quota exceeded, etc).
   }

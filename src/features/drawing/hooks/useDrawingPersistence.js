@@ -1,5 +1,5 @@
 import _ from "lodash";
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   DEFAULT_SAVE_DEBOUNCE_MS,
   DRAWING_STORAGE_KEY,
@@ -10,25 +10,39 @@ import {
 } from "../services/drawingStorage";
 
 /**
- * Keeps Excalidraw scene data in localStorage with debounced writes.
+ * Keeps Excalidraw scene data in IndexedDB with debounced writes.
  *
  * Why this hook exists:
  * - Excalidraw emits `onChange` very frequently while users draw.
- * - Writing every event to localStorage is wasteful and can feel laggy.
+ * - Writing every event to storage is wasteful and can feel laggy.
  * - Debouncing keeps the UI smooth while still persisting often enough.
  */
 export const useDrawingPersistence = ({
   storageKey = DRAWING_STORAGE_KEY,
   saveDebounceMs = DEFAULT_SAVE_DEBOUNCE_MS,
 } = {}) => {
+  const [initialData, setInitialData] = useState(undefined);
+
   /**
    * Load once per board key so Excalidraw can initialize from persisted data.
-   * `useMemo` avoids re-parsing JSON during unrelated rerenders.
    */
-  const initialData = useMemo(
-    () => loadSceneFromStorage(storageKey),
-    [storageKey],
-  );
+  useEffect(() => {
+    let isCancelled = false;
+
+    const loadInitialScene = async () => {
+      const loadedScene = await loadSceneFromStorage(storageKey);
+      if (!isCancelled) {
+        setInitialData(loadedScene);
+      }
+    };
+
+    // Fire-and-forget async load inside this effect; cancellation guard prevents stale setState.
+    void loadInitialScene();
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [storageKey]);
 
   /**
    * Keep one debounced writer per key/debounce combination.
@@ -37,7 +51,8 @@ export const useDrawingPersistence = ({
   const debouncedSave = useMemo(
     () =>
       _.debounce((scene) => {
-        saveSceneToStorage(scene, storageKey);
+        // Fire-and-forget write from debounced callback; storage service handles errors internally.
+        void saveSceneToStorage(scene, storageKey);
       }, saveDebounceMs),
     [storageKey, saveDebounceMs],
   );

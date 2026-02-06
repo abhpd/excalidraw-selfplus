@@ -1,10 +1,8 @@
 import {
-  DRAWING_STORAGE_KEY,
   ROOT_FOLDER_ID,
   WORKSPACE_STORAGE_KEY,
-  createBoardStorageKey,
 } from "../constants/persistence";
-import { loadSceneFromStorage, saveSceneToStorage } from "./drawingStorage";
+import { getPersistedValue, setPersistedValue } from "./persistenceDb";
 import {
   createBoardItem,
   createFolderItem,
@@ -133,28 +131,6 @@ const sanitizeWorkspace = (rawWorkspace) => {
 };
 
 /**
- * One-time migration: if legacy single-scene storage exists, copy it into
- * the default board storage key.
- */
-const migrateLegacyScene = (workspace) => {
-  const targetBoardKey = createBoardStorageKey(workspace.activeBoardId);
-  try {
-    if (localStorage.getItem(targetBoardKey)) {
-      return;
-    }
-  } catch {
-    return;
-  }
-
-  const legacyScene = loadSceneFromStorage(DRAWING_STORAGE_KEY);
-  if (!legacyScene) {
-    return;
-  }
-
-  saveSceneToStorage(legacyScene, targetBoardKey);
-};
-
-/**
  * Creates a brand-new workspace with one root folder and one board.
  */
 export const createDefaultWorkspace = () => {
@@ -175,36 +151,32 @@ export const createDefaultWorkspace = () => {
 };
 
 /**
- * Reads and sanitizes workspace metadata from localStorage.
+ * Reads and sanitizes workspace metadata from IndexedDB.
  */
-export const loadWorkspaceFromStorage = (
+export const loadWorkspaceFromStorage = async (
   storageKey = WORKSPACE_STORAGE_KEY,
 ) => {
   try {
-    const rawWorkspace = localStorage.getItem(storageKey);
+    const rawWorkspace = await getPersistedValue(storageKey);
     if (!rawWorkspace) {
-      const nextWorkspace = createDefaultWorkspace();
-      migrateLegacyScene(nextWorkspace);
-      return nextWorkspace;
+      return createDefaultWorkspace();
     }
 
     return sanitizeWorkspace(JSON.parse(rawWorkspace));
   } catch {
-    const nextWorkspace = createDefaultWorkspace();
-    migrateLegacyScene(nextWorkspace);
-    return nextWorkspace;
+    return createDefaultWorkspace();
   }
 };
 
 /**
  * Persists workspace metadata; failures are intentionally non-fatal.
  */
-export const saveWorkspaceToStorage = (
+export const saveWorkspaceToStorage = async (
   workspace,
   storageKey = WORKSPACE_STORAGE_KEY,
 ) => {
   try {
-    localStorage.setItem(storageKey, JSON.stringify(workspace));
+    await setPersistedValue(storageKey, JSON.stringify(workspace));
   } catch {
     // Ignore storage errors (private mode, quota exceeded, etc).
   }
